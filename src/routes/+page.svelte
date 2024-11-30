@@ -112,7 +112,7 @@
 
 <main class="container mx-auto">
 	<ul
-		class="my-5 flex h-[80vh] flex-col gap-5 overflow-y-scroll rounded border border-primary p-5"
+		class="my-5 flex h-[70vh] flex-col gap-5 overflow-y-scroll rounded border border-primary p-5"
 		bind:this={chatContainer}
 	>
 		{#each $messages as m}
@@ -122,15 +122,18 @@
 	<form onsubmit={handleSubmit} class="flex items-center gap-2">
 		<Button onclick={() => fileInput.click()}>
 			<Paperclip />
+			<input
+				bind:this={fileInput}
+				class="hidden"
+				type="file"
+				accept="application/pdf"
+				onchange={sendFile}
+			/>
 		</Button>
-		<Input bind:value={$input} class="border-primary" />
-
-		<input
-			bind:this={fileInput}
-			class="hidden"
-			type="file"
-			accept="application/pdf"
-			onchange={sendFile}
+		<Input
+			bind:value={$input}
+			class="border-primary"
+			placeholder="Type you question to the LLM here!!"
 		/>
 		{#if $isLoading}
 			<Button onclick={stop} variant="destructive">Stop</Button>
