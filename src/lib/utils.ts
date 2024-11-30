@@ -34,9 +34,9 @@ export async function extractTextFromFile(file: File): Promise<string> {
 			const pageText = textContent.items
 				.map(
 					(item) =>
-						// @ts-expect-error foo
+						// @ts-expect-error `item.str` contains the text
 						item.str
-				) // `item.str` contains the text
+				)
 				.join(' ');
 
 			fullText += `\n\nPage ${i}:\n${pageText}`;
