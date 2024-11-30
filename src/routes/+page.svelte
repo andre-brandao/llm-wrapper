@@ -61,12 +61,20 @@
 		return JSON.parse(savedMessages);
 	}
 
-	// onMount(() => {
-	// 	loadMessagesFromLocalStorage();
-	// });
+	function scrollToBottom() {
+		if (!chatContainer) return;
+		chatContainer.scrollTop = chatContainer.scrollHeight;
+	}
+
+	onMount(() => {
+		setTimeout(() => {
+			scrollToBottom();
+		}, 100);
+	});
 
 	$: {
 		saveMessagesToLocalStorage($messages);
+		scrollToBottom();
 	}
 	async function sendFile(
 		e: Event & {
