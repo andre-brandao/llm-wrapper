@@ -1,18 +1,32 @@
 <script lang="ts">
-	import type { Message, CreateMessage, DataMessage } from 'ai';
+	import type {
+		Message,
+		CreateMessage,
+		DataMessage,
+		Attachment
+	} from 'ai';
 	import { onMount, tick } from 'svelte';
 
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import Input from '$lib/components/ui/input/input.svelte';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { Paperclip } from 'lucide-svelte';
 
 	import SvelteMarckdown from 'svelte-markdown';
 	import { enhance } from '$app/forms';
 	import SvelteMarkdown from 'svelte-markdown';
 
 	import { useChat } from '@ai-sdk/svelte';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import Input from '$lib/components/ui/input/input.svelte';
 
+	import { extractTextFromFile } from '$lib/utils';
+	import MessagesComponent from './Messages.svelte';
+
+	let fileInput: HTMLInputElement;
+	let textInput: HTMLInputElement;
+	let chatContainer: HTMLUListElement;
 	const {
 		input,
 		handleSubmit,
@@ -29,97 +43,84 @@
 		stop
 	} = useChat({});
 
-	function sendMessage() {}
-
-	function focusInputs() {}
-
 	function clearChat() {
-		setMessages;
+		setData([]);
+	}
+
+	// function fileToAtachment(files: FileList): Attachment[] {
+	// 	const attachments: Attachment[] = [];
+	// 	for (const file of files) {
+	// 		attachments.push({
+	// 			name: file.name,
+	// 			contentType: file.type,
+	// 			url: URL.createObjectURL(file)
+	// 		});
+	// 	}
+	// 	return attachments;
+	// }
+
+	async function sendFile(
+		e: Event & {
+			currentTarget: EventTarget & HTMLInputElement;
+		}
+	) {
+		const target = e.target as HTMLInputElement;
+		const files = target.files;
+		if (!files) return;
+
+		let fileText: Record<string, string> = {};
+		for (const file of files) {
+			const pdf_text = await extractTextFromFile(file);
+			console.log(pdf_text);
+			fileText[file.name] = pdf_text;
+		}
+
+		function formatFileText() {
+			let formattedText = '';
+			for (const [key, value] of Object.entries(fileText)) {
+				formattedText += `PDF:${key}\n${value}\n\n`;
+			}
+			return formattedText;
+		}
+		const newMSG: CreateMessage = {
+			content: 'PDF:\n' + JSON.stringify(fileText),
+			role: 'user',
+			data: JSON.stringify(fileText)
+		};
+		console.log(newMSG);
+		const resp = await append(newMSG);
+		console.log(resp);
 	}
 </script>
 
-{#snippet Message(msg: Message)}
-	{#if msg.role === 'user'}
-		<li class="flex flex-col items-end">
-			<div class="flex items-center gap-3">
-				<Avatar.Root>
-					<Avatar.Image
-						src="https://github.com/shadcn.png"
-						alt="@shadcn"
-					/>
-					<Avatar.Fallback>CN</Avatar.Fallback>
-				</Avatar.Root>
-
-				<p>
-					{msg.role}
-				</p>
-			</div>
-			{msg.content}
-		</li>
-	{:else if msg.role === 'assistant'}
-		<li class="flex flex-col">
-			<div class="flex items-center gap-3">
-				<Avatar.Root>
-					<Avatar.Image
-						src="https://github.com/shadcn.png"
-						alt="@shadcn"
-					/>
-					<Avatar.Fallback>CN</Avatar.Fallback>
-				</Avatar.Root>
-
-				<p>
-					{msg.role}
-				</p>
-			</div>
-			{msg.content}
-		</li>
-	{:else}
-		<li class="flex flex-col">
-			<div class="flex items-center gap-3">
-				<Avatar.Root>
-					<Avatar.Image
-						src="https://github.com/shadcn.png"
-						alt="@shadcn"
-					/>
-					<Avatar.Fallback>CN</Avatar.Fallback>
-				</Avatar.Root>
-
-				<p>
-					{msg.role}
-				</p>
-			</div>
-			{msg.content}
-		</li>
-	{/if}
-{/snippet}
-
 <main class="container mx-auto">
-	<ul class="flex h-[80vh] flex-col gap-5 bg-background">
+	<ul
+		class="flex h-[80vh] flex-col gap-5 overflow-y-scroll bg-background"
+		bind:this={chatContainer}
+	>
 		{#each $messages as m}
-			{@render Message(m)}
+			<MessagesComponent msg={m} />
 		{/each}
 	</ul>
 	<form onsubmit={handleSubmit} class="flex items-center gap-2">
+		<Button onclick={() => fileInput.click()}>
+			<Paperclip />
+		</Button>
 		<Input bind:value={$input} />
-		<Input
-			type="file"
-			onchange={(e) => {
-				const target = e.target as HTMLInputElement;
-				const file = target.files?.[0];
-				if (!file) return;
-				const reader = new FileReader();
-				reader.onload = (event) => {
-					const data = event.target?.result;
 
-					if (data) {
-						// append({ role: 'user', content:});
-					}
-				};
-				reader.readAsDataURL(file);
-			}}
+		<input
+			bind:this={fileInput}
+			class="hidden"
+			type="file"
+			accept="application/pdf"
+			onchange={sendFile}
 		/>
 		<Button type="submit" class="" disabled={$isLoading}>
 			{$isLoading ? 'Sending...' : 'Send'}
 		</Button>
 	</form>
+
+	{#if $error}
+		<p>{$error}</p>
+	{/if}
 </main>
