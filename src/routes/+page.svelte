@@ -41,24 +41,33 @@
 		setData,
 		setMessages,
 		stop
-	} = useChat({});
+	} = useChat({
+		initialMessages: loadMessagesFromLocalStorage()
+	});
 
 	function clearChat() {
 		setData([]);
 	}
+	function saveMessagesToLocalStorage(msgs: Message[]) {
+		localStorage.setItem('chatMessages', JSON.stringify(msgs));
+	}
 
-	// function fileToAtachment(files: FileList): Attachment[] {
-	// 	const attachments: Attachment[] = [];
-	// 	for (const file of files) {
-	// 		attachments.push({
-	// 			name: file.name,
-	// 			contentType: file.type,
-	// 			url: URL.createObjectURL(file)
-	// 		});
-	// 	}
-	// 	return attachments;
-	// }
+	function loadMessagesFromLocalStorage() {
+		const savedMessages = localStorage.getItem('chatMessages');
+		if (!savedMessages) return [];
+		// if (savedMessages) {
+		// 	setMessages(JSON.parse(savedMessages));
+		// }
+		return JSON.parse(savedMessages);
+	}
 
+	// onMount(() => {
+	// 	loadMessagesFromLocalStorage();
+	// });
+
+	$: {
+		saveMessagesToLocalStorage($messages);
+	}
 	async function sendFile(
 		e: Event & {
 			currentTarget: EventTarget & HTMLInputElement;
@@ -95,7 +104,7 @@
 
 <main class="container mx-auto">
 	<ul
-		class="flex h-[80vh] flex-col gap-5 overflow-y-scroll bg-background"
+		class="my-5 flex h-[80vh] flex-col gap-5 overflow-y-scroll rounded border border-primary p-5"
 		bind:this={chatContainer}
 	>
 		{#each $messages as m}
@@ -106,7 +115,7 @@
 		<Button onclick={() => fileInput.click()}>
 			<Paperclip />
 		</Button>
-		<Input bind:value={$input} />
+		<Input bind:value={$input} class="border-primary" />
 
 		<input
 			bind:this={fileInput}
@@ -115,12 +124,21 @@
 			accept="application/pdf"
 			onchange={sendFile}
 		/>
-		<Button type="submit" class="" disabled={$isLoading}>
-			{$isLoading ? 'Sending...' : 'Send'}
-		</Button>
+		{#if $isLoading}
+			<Button onclick={stop} variant="destructive">Stop</Button>
+		{:else}
+			<Button type="submit" class="" disabled={$isLoading}>
+				{$isLoading ? 'Sending...' : 'Send'}
+			</Button>
+		{/if}
 	</form>
 
+	<div class=" m-2 flex items-center justify-center gap-5">
+		<Button onclick={clearChat} variant="outline">Clear Chat</Button>
+	</div>
+
 	{#if $error}
-		<p>{$error}</p>
+		<p class="text-center text-red-600">{$error}</p>
+		<Button onclick={reload}>Reload</Button>
 	{/if}
 </main>
