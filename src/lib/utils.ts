@@ -1,14 +1,17 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import pdfJSWorkerURL from 'pdfjs-dist/build/pdf.worker?url';
+
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
 export async function extractTextFromFile(file: File): Promise<string> {
 	const pdfjsLib = await import('pdfjs-dist');
-	pdfjsLib.GlobalWorkerOptions.workerSrc =
-		'./node_modules/pdfjs-dist/build/pdf.worker.min.mjs';
+	// pdfjsLib.GlobalWorkerOptions.workerSrc = './node_modules/pdfjs-dist/build/pdf.worker.min.mjs';
+	pdfjsLib.GlobalWorkerOptions.workerSrc = pdfJSWorkerURL;
+
 	try {
 		const fileReader = new FileReader();
 
