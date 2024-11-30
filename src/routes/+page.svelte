@@ -46,7 +46,7 @@
 	});
 
 	function clearChat() {
-		setData([]);
+		setMessages([]);
 	}
 	function saveMessagesToLocalStorage(msgs: Message[]) {
 		localStorage.setItem('chatMessages', JSON.stringify(msgs));
