@@ -1,38 +1,39 @@
-# sv
+# Deds GPT
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Projeto desenvolvido para a matéria de TOPICOS 3 na PUC-MG
 
-## Creating a project
+![Preview](static/image.png)
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Instruções
+
+### Instalando o projeto
+
+Faça um clone do projeto localmente e instale as dependencias utilizando algum package manager de sua escolha
 
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+npm install
+# or
+pnpm install
+# or
+bun install
 ```
 
-## Developing
+Para roda o projeto localmente é necessario adicionar o chave da Anthropic(https://www.anthropic.com/) no arquivo .env
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Recomendo apenas renomear o .env.exemple para env e adicionar a chave da api
+
+.env deve ficar assim
+
+```txt
+ANT_KEY="sk_YOUR_ANTROPIC_KEY...."
+```
+
+Para rodar a aplicação localmente basta utilizar o comando de dev localizado no arquivo package.json ou usando o package manager
 
 ```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+#or
+pnpm run dev
+#or
+bun run dev
 ```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
